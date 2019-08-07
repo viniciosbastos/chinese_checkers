@@ -9,6 +9,13 @@ public class TilesUtils {
 	public static final double TILE_WIDTH = Math.sqrt(3) * TILE_SIZE;
 	
 	public static final double TILE_HEIGHT = TILE_SIZE * 2;
+	
+	public static final double TILE_OFFSET = TILE_WIDTH / 2;
+	
+	public static final double FIRST_TILE_X = 130;
+	
+	public static final double FIRST_TILE_Y = 50;
+	
 
 	public static Point calculateCoordinateOfHexByIndex(Point center,  int i) {
 	    double angle_deg = 60 * i - 30;

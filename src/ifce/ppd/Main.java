@@ -1,5 +1,6 @@
 package ifce.ppd;
 
+import ifce.ppd.models.Board;
 import ifce.ppd.models.Cell;
 import ifce.ppd.models.Point;
 import ifce.ppd.utils.TilesUtils;
@@ -40,19 +41,33 @@ public class Main extends Application{
 					
 		Pane board = new Pane();
 		Point inicio = new Point(130, 50);
-		for (int i = 0; i < 17; i++) {
-			for (int j = 0; j < 13; j++) {
-				Cell cell = new Cell(true, new Point(inicio.getX()+(j*TilesUtils.TILE_WIDTH), inicio.getY()));
-				board.getChildren().add(cell.getTile());			
+		
+		int qtd = 13;
+		int offset = 0;
+		
+		Board boardObj = new Board();
+		boardObj.createBoardMatrix();
+		for (int i = 0; i < Board.BOARD_HEIGHT; i++) {
+			for (int j = 0; j < Board.BOARD_WIDTH; j++) {
+				Cell cell = boardObj.getBoardMatrix()[i][j];
+				if (cell != null)
+					board.getChildren().add(cell.getTile());			
 			}
-			if (i % 2 == 0) {
-				inicio.setX(inicio.getX() + (TilesUtils.TILE_WIDTH/2));
-			} else {
-				inicio.setX(inicio.getX() - (TilesUtils.TILE_WIDTH/2));
-			}
-			inicio.setY(inicio.getY() + (TilesUtils.TILE_HEIGHT*3/4));
 		}
 		
+//		for (int i = 0; i < 17; i++) {
+//			for (int j = 0; j < 13; j++) {
+//				Cell cell = new Cell(true, new Point(inicio.getX()+(j*TilesUtils.TILE_WIDTH), inicio.getY()));
+//				board.getChildren().add(cell.getTile());			
+//			}
+//			if (i % 2 == 0) {
+//				inicio.setX(inicio.getX() + (TilesUtils.TILE_WIDTH/2));
+//			} else {
+//				inicio.setX(inicio.getX() - (TilesUtils.TILE_WIDTH/2));
+//			}
+//			inicio.setY(inicio.getY() + (TilesUtils.TILE_HEIGHT*3/4));
+//		}
+//		
 		gridPane.add(board, 0, 0);
 		
 		Scene scene = new Scene(gridPane, 1200, 600);
