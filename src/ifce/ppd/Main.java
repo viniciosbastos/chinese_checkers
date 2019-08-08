@@ -41,12 +41,9 @@ public class Main extends Application{
 					
 		Pane board = new Pane();
 		Point inicio = new Point(130, 50);
-		
-		int qtd = 13;
-		int offset = 0;
-		
+				
 		Board boardObj = new Board();
-		boardObj.createBoardMatrix();
+		boardObj.createBoard();
 		for (int i = 0; i < Board.BOARD_HEIGHT; i++) {
 			for (int j = 0; j < Board.BOARD_WIDTH; j++) {
 				Cell cell = boardObj.getBoardMatrix()[i][j];
@@ -67,7 +64,7 @@ public class Main extends Application{
 //			}
 //			inicio.setY(inicio.getY() + (TilesUtils.TILE_HEIGHT*3/4));
 //		}
-//		
+		
 		gridPane.add(board, 0, 0);
 		
 		Scene scene = new Scene(gridPane, 1200, 600);
