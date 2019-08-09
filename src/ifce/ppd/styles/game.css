@@ -1,0 +1,21 @@
+.hex {
+	-fx-fill: white;
+	-fx-stroke: black;
+}
+
+.hex-active {
+	-fx-fill: blue;
+}
+
+.hex-highlight {
+	-fx-fill: gold;
+}
+
+.chat-text-area {
+	-fx-pref-height: 500px;
+}
+
+.no-focus-effect {
+	-fx-focus-color: transparent; 
+	-fx-faint-focus-color: transparent;
+}

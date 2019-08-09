@@ -29,4 +29,9 @@ public class Point {
 	public Double[] asArray() {
 		return new Double[] { this.getX(), this.getY() };
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("(%.2f, %.2f)", this.x, this.y);
+	}
 }

@@ -1,5 +1,8 @@
 package ifce.ppd.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ifce.ppd.utils.TilesUtils;
 
 public class Board {
@@ -7,10 +10,19 @@ public class Board {
 	
 	public static final int BOARD_HEIGHT = 17;
 	
-	private Cell[][] boardMatrix;	
+	private Cell[][] boardMatrix;
+	
+	private int[][] possibleNeighborPositions;
+	
 	
 	public Board() {
 		this.boardMatrix = new Cell[BOARD_HEIGHT][BOARD_WIDTH];
+		this.possibleNeighborPositions = new int[][] {{-1, -1},
+													 {-1, 0},
+													 {0, -1},
+													 {0, +1},
+													 {1, -1},
+													 {1, 0}};
 	}
 	
 	public Cell[][] getBoardMatrix() {
@@ -36,7 +48,7 @@ public class Board {
 				quantity--;
 			
 			for (int j = offset; j < quantity; j++) {
-				Cell tileCell = new Cell(true, new Point(baseX+(j*TilesUtils.TILE_WIDTH), baseY - ((12-i)*TilesUtils.TILE_HEIGHT*3/4)));
+				Cell tileCell = new Cell(true, new Point(baseX+(j*TilesUtils.TILE_WIDTH), baseY - ((12-i)*TilesUtils.TILE_HEIGHT*3/4)), i, j);
 				this.boardMatrix[i][j] = tileCell;
 			}			
 			
@@ -63,7 +75,7 @@ public class Board {
 			
 			for (int j = offset; j < quantity; j++) {
 				if (this.boardMatrix[i][j] == null) {
-					Cell tileCell = new Cell(true, new Point(baseX+(j*TilesUtils.TILE_WIDTH), baseY + ((i-4)*TilesUtils.TILE_HEIGHT*3/4)));
+					Cell tileCell = new Cell(true, new Point(baseX+(j*TilesUtils.TILE_WIDTH), baseY + ((i-4)*TilesUtils.TILE_HEIGHT*3/4)), i, j);
 					this.boardMatrix[i][j] = tileCell;					
 				}
 			}			
@@ -76,4 +88,28 @@ public class Board {
 		}
 		
 	}
+
+	public Cell[] getAdjacentTo(Cell cell) {
+		return getAdjacentToInEvenRow(cell);
+	}
+
+	private Cell[] getAdjacentToInEvenRow(Cell cell) {		
+		List<Cell> cells = new ArrayList<Cell>();
+		
+		for (int i = 0; i < 6; i++) {
+			try {
+				if (cell.getMatrixIndiceRow()%2 == 0) 
+					cells.add(this.boardMatrix[cell.getMatrixIndiceRow() + this.possibleNeighborPositions[i][0]]
+											  [cell.getMatrixIndiceColumn() + this.possibleNeighborPositions[i][1]]);
+				else if (i < 2 || i > 3)
+					cells.add(this.boardMatrix[cell.getMatrixIndiceRow() + this.possibleNeighborPositions[i][0]]
+											  [cell.getMatrixIndiceColumn() + this.possibleNeighborPositions[i][1]+1]);
+				else
+					cells.add(this.boardMatrix[cell.getMatrixIndiceRow() + this.possibleNeighborPositions[i][0]]
+							  [cell.getMatrixIndiceColumn() + this.possibleNeighborPositions[i][1]]);
+			} catch (ArrayIndexOutOfBoundsException e) {}
+		}
+		return cells.toArray(new Cell[6]);
+	}
+	
 }
