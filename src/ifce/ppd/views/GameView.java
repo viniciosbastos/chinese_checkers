@@ -40,7 +40,6 @@ public class GameView {
 												new ColumnConstraints(400));				
 		gridPane.add(this.chatArea, 1, 0);							
 		gridPane.add(this.boardArea, 0, 0);
-		
 		this.scene = new Scene(gridPane, 1200, 600);
 		this.scene.getStylesheets().add("ifce/ppd/styles/game.css");
 		

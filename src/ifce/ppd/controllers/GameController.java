@@ -18,7 +18,7 @@ public class GameController {
 	}
 	
 	private void tileSelected(Cell cell) {
-		cell.getTile().getStyleClass().add("hex-active");
+		cell.getTile().getStyleClass().addAll("teste");
 		this.highlightPossibleMoves(cell);
 	}
 	
