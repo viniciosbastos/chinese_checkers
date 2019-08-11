@@ -12,9 +12,9 @@ public class TilesUtils {
 	
 	public static final double TILE_OFFSET = TILE_WIDTH / 2;
 	
-	public static final double FIRST_TILE_X = 130;
+	public static final double CENTER_X = 400;
 	
-	public static final double FIRST_TILE_Y = 50;
+	public static final double CENTER_Y = 300;
 	
 
 	public static Point calculateCoordinateOfHexByIndex(Point center,  int i) {

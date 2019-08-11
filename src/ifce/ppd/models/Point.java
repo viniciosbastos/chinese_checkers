@@ -34,4 +34,13 @@ public class Point {
 	public String toString() {
 		return String.format("(%.2f, %.2f)", this.x, this.y);
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		Point point = (Point) o;
+		if (this.x != point.getX() || this.y != point.getY()) 
+			return false;
+		else
+			return true;
+	}
 }

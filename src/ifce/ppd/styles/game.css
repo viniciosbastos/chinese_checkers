@@ -3,21 +3,57 @@
 	-fx-stroke: black;
 }
 
-.hex-active {
-	-fx-fill: blue;
-}
-
-.teste{
-	-fx-background-image: url("/ifce/ppd/images/1.png");
-	-fx-background-size: 20 20;
+.hex-active-blue {
+	-fx-fill: rgb(0, 102, 255);
+	-fx-stroke: black;
 }
 
 .hex-highlight {
 	-fx-fill: gold;
 }
 
+.hex-blue {
+	-fx-fill: blue;
+	-fx-stroke: black;
+}
+
+.hex-red {
+	-fx-fill: red;
+	-fx-stroke: black;
+}
+
+.hex-green {
+	-fx-fill: green;
+	-fx-stroke: black;
+}
+
+.hex-pink {
+	-fx-fill: pink;
+	-fx-stroke: black;
+}
+
+.hex-brown {
+	-fx-fill: brown;
+	-fx-stroke: black;
+}
+
+.hex-indigo {
+	-fx-fill: indigo;
+	-fx-stroke: black;
+}
+
 .chat-text-area {
 	-fx-pref-height: 500px;
+}
+
+.chat-text-input {
+	-fx-pref-height: 70px;
+	-fx-pref-width: 370px;
+}
+
+.chat-send-button {
+	-fx-pref-height: 70px;	
+	-fx-pref-width: 30px;
 }
 
 .no-focus-effect {

@@ -4,35 +4,37 @@ import ifce.ppd.utils.TilesUtils;
 import javafx.scene.shape.Polygon;
 
 public class Cell {
-	private boolean visible;
+	private boolean movable;
 	
 	private boolean empty;
+	
+	private Player player;
 	
 	private Polygon tile;
 
 	private Point center;
 	
-	private int matrixIndiceRow;
+	private int matrixIndexRow;
 	
-	private int matrixIndiceColumn;
+	private int matrixIndexColumn;
 	
 
-	public Cell(boolean visible, Point center, int i, int j) {
-		this.visible = visible;
+	public Cell(Point center, int i, int j) {		
 		this.center = center;
 		createTile();
-		this.matrixIndiceRow = i;
-		this.matrixIndiceColumn = j;
+		this.matrixIndexRow = i;
+		this.matrixIndexColumn = j;
+		this.reset();
 	}
 
-	public boolean isVisible() {
-		return visible;
+	public boolean isMovable() {
+		return movable;
 	}
 
-	public void setVisible(boolean visible) {
-		this.visible = visible;
+	public void setMovable(boolean movable) {
+		this.movable = movable;
 	}
-
+	
 	public boolean isEmpty() {
 		return empty;
 	}
@@ -53,20 +55,58 @@ public class Cell {
 		return center;
 	}	
 
-	public int getMatrixIndiceRow() {
-		return matrixIndiceRow;
+	public int getMatrixIndexRow() {
+		return matrixIndexRow;
 	}
 
-	public int getMatrixIndiceColumn() {
-		return matrixIndiceColumn;
+	public int getMatrixIndexColumn() {
+		return matrixIndexColumn;
+	}
+
+	public Player getPlayer() {
+		return player;
 	}
 
 	private void createTile() {
 		this.tile = new Polygon();
-		this.tile.getStyleClass().add("hex");
-	
 		for (int i = 0; i < 6; i++) {
 			this.tile.getPoints().addAll(TilesUtils.calculateCoordinateOfHexByIndex(this.center, i).asArray());
 		}
 	}
+
+	public void setOwner(Player player) {
+		this.player = player;
+		this.getTile().getStyleClass().add(player.getCellStyle());
+		this.setEmpty(false);
+	}
+
+	public void reset() {
+		this.player = null;
+		this.setMovable(false);
+		this.getTile().getStyleClass().clear();
+		this.getTile().getStyleClass().add("hex");
+		this.getTile().setOnMouseClicked(null);
+		this.setEmpty(true);
+	}
+	
+	public void selectCell() {
+		getTile().getStyleClass().clear();		
+		getTile().getStyleClass().add(player.getCellActiveStyle());		
+	}
+	
+	public void deselectCell() {
+		getTile().getStyleClass().clear();		
+		getTile().getStyleClass().add(player.getCellStyle());		
+	}
+	
+	
+	@Override
+	public boolean equals(Object obj) {
+		Cell cellObj = (Cell) obj;
+		if (obj == null)
+			return false;
+		else
+			return this.center.equals(cellObj.getCenter());
+	}
+
 }

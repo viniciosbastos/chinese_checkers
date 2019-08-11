@@ -1,9 +1,11 @@
 package ifce.ppd.views;
 
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
@@ -18,6 +20,10 @@ public class GameView {
 	private VBox chatArea;
 	
 	private Pane boardArea;
+	
+	private Button endTurnButton;
+	
+	private Button sendMessageButton;	
 		
 	public void createChatArea() {
 		chatArea = new VBox();		
@@ -27,11 +33,24 @@ public class GameView {
 		chatTextArea.getStyleClass().addAll("chat-text-area", "no-focus-effect");
 		
 		
-		this.messageTextArea = new TextArea();
-		messageTextArea.setPrefHeight(100);
-		messageTextArea.setPromptText("Type your message here...");
+		HBox messageHBox = new HBox();
 		
-		chatArea.getChildren().addAll(chatTextArea, messageTextArea);
+		this.messageTextArea = new TextArea();
+		messageTextArea.getStyleClass().addAll("chat-text-input", "no-focus-effect");
+		messageTextArea.setPromptText("Type your message here...");
+		this.sendMessageButton = new Button();
+		this.sendMessageButton.setText("->");
+		this.sendMessageButton.getStyleClass().add("chat-send-button");
+		
+		messageHBox.getChildren().addAll(messageTextArea, sendMessageButton);
+		
+		
+		HBox buttonsHBox = new HBox();
+		this.endTurnButton = new Button();
+		this.endTurnButton.setText("Finalizar Turno");
+		
+		buttonsHBox.getChildren().add(endTurnButton);
+		chatArea.getChildren().addAll(chatTextArea, messageHBox, buttonsHBox);
 	}
 	
 	public Scene createScene() {
@@ -69,5 +88,13 @@ public class GameView {
 	public Pane getBoardArea() {
 		return boardArea;
 	}
+
+	public Button getEndTurnButton() {
+		return endTurnButton;
+	}
 		
+	public Button getSendMessageButton() {
+		return this.sendMessageButton;
+	}
+	
 }
