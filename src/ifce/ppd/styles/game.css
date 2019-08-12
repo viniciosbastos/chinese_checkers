@@ -8,6 +8,11 @@
 	-fx-stroke: black;
 }
 
+.hex-active-red {
+	-fx-fill: rgb(255, 97, 97);
+	-fx-stroke: black;
+}
+
 .hex-highlight {
 	-fx-fill: gold;
 }

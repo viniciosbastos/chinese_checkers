@@ -1,48 +1,58 @@
 package ifce.ppd.controllers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import ifce.ppd.bindings.ObservableStringBufferBiding;
 import ifce.ppd.models.Board;
 import ifce.ppd.models.Cell;
+import ifce.ppd.models.MessageCommand;
+import ifce.ppd.models.MoveCommand;
 import ifce.ppd.models.Player;
+import ifce.ppd.threads.GameViewUpdaterThread;
 import ifce.ppd.utils.AreaUtils;
 import ifce.ppd.views.GameView;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 
-public class GameController {
+public class GameViewController {
+	
 	private GameView view;
-	
 	private Board board;
-	
 	private Player player;
-	
 	private Player oponent;
-	
 	private List<Cell> possibleMoves;
-	
 	private Cell movingPiece;
-	
 	private boolean canMove;
-	
 	private boolean hasJumped;
-	
 	private ObservableStringBufferBiding buffer;
+	private CommunicationController communicationController;
+	private GameViewUpdaterThread gameViewUpdaterThread;
 
-	public GameController() {
+	
+	public GameViewController(Player player, Player oponent) {
 		view = new GameView();
 		board = new Board();
 		board.createBoard();
-		oponent= new Player("red", 1, 1);
-		player= new Player("blue", 4, 1);
+		this.oponent = oponent;
+		this.player = player;
 		this.possibleMoves = new ArrayList<Cell>();
 		this.buffer = new ObservableStringBufferBiding();
 		this.canMove = true;
 		this.hasJumped = false;
+		
+		this.communicationController = new CommunicationController("127.0.0.1", 3000);
+		initUpdaterThread();
 	}
 	
+	private void initUpdaterThread() {
+		this.gameViewUpdaterThread = new GameViewUpdaterThread(this.board, this.buffer, this.communicationController.getReceivedCommands(), this.communicationController.getUpdateViewLock());
+		Thread updater = new Thread(this.gameViewUpdaterThread);
+		updater.start();
+		
+	}
+
 	private void selectPieceToMove(Cell cell) {
 		if (!this.possibleMoves.isEmpty())
 			this.clearHighlightedCells();
@@ -74,6 +84,7 @@ public class GameController {
 		to.getTile().setOnMouseClicked(e -> selectPieceToMove(to));
 		from.reset();
 		this.canMove = false;
+		this.sendMoveCommand(from, to);
 	}
 	
 	private void jumpToCell(Cell from, Cell to) {		
@@ -84,6 +95,7 @@ public class GameController {
 		from.reset();
 		this.canMove = true;
 		this.hasJumped = true;
+		this.sendMoveCommand(from, to);
 	}
 	
 	private void highlightNeighborMoves(Cell cell) {
@@ -141,8 +153,9 @@ public class GameController {
 		if (text != null && !text.isEmpty()) {
 			// Send message to opponent player
 			// after response does:
-			this.buffer.append("Player: " + text);
+			this.buffer.append("Você: " + text);
 			this.view.getMessageTextArea().clear();
+			this.communicationController.addCommand(new MessageCommand(text));
 		}
 	}
 
@@ -152,9 +165,7 @@ public class GameController {
 		this.clearHighlightedCells();
 		this.movingPiece = null;
 		this.canMove = true;
-		this.hasJumped = false;
-		
-		this.buffer.append("Next Turn");
+		this.hasJumped = false;		
 	}
 
 	private Pane createBoard(Board board) {
@@ -172,10 +183,10 @@ public class GameController {
 		return boardPane;
 	}
 	
-	private void initOponentsArea(Player player) {		
-		for (int[] position : AreaUtils.getArea(player.getPlayerArea())) {
+	private void initOponentsArea(Player oponent) {		
+		for (int[] position : AreaUtils.getArea(oponent.getPlayerArea())) {
 			Cell cell = this.board.getBoardMatrix()[position[0]][position[1]];
-			cell.setOwner(player);
+			cell.setOwner(oponent);
 		}
 	}
 	
@@ -185,5 +196,31 @@ public class GameController {
 			cell.setOwner(player);
 			cell.getTile().setOnMouseClicked(e -> selectPieceToMove(cell));
 		}
+	}
+	
+	private void sendMoveCommand(Cell from, Cell to) {
+		this.communicationController.addCommand(new MoveCommand(from, to, this.player));		
+	}
+	
+	public void createServer() {
+		try {
+			this.communicationController.createServer();			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void connect() {
+		try {
+			this.communicationController.connect();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void closeGame() {
+		if (this.gameViewUpdaterThread != null)
+			this.gameViewUpdaterThread.stop();	
+		this.communicationController.stopCommunication();
 	}
 }

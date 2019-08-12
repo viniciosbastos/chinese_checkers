@@ -1,6 +1,13 @@
 package ifce.ppd.models;
 
-public class Point {
+import java.io.Serializable;
+
+public class Point implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1033752391684401590L;
+
 	private double x;
 	
 	private double y;

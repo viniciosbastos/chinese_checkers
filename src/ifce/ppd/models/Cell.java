@@ -1,9 +1,16 @@
 package ifce.ppd.models;
 
+import java.io.Serializable;
+
 import ifce.ppd.utils.TilesUtils;
 import javafx.scene.shape.Polygon;
 
-public class Cell {
+public class Cell implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 543476319849982814L;
+
 	private boolean movable;
 	
 	private boolean empty;

@@ -1,6 +1,13 @@
 package ifce.ppd.models;
 
-public class Player {
+import java.io.Serializable;
+
+public class Player implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1195521006996317269L;
+
 	private String color;
 	
 	private int playerArea;
