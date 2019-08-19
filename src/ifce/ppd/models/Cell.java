@@ -12,17 +12,11 @@ public class Cell implements Serializable{
 	private static final long serialVersionUID = 543476319849982814L;
 
 	private boolean movable;
-	
 	private boolean empty;
-	
-	private Player player;
-	
+	private Player owner;
 	private Polygon tile;
-
 	private Point center;
-	
 	private int matrixIndexRow;
-	
 	private int matrixIndexColumn;
 	
 
@@ -70,8 +64,8 @@ public class Cell implements Serializable{
 		return matrixIndexColumn;
 	}
 
-	public Player getPlayer() {
-		return player;
+	public Player getOwner() {
+		return owner;
 	}
 
 	private void createTile() {
@@ -82,13 +76,13 @@ public class Cell implements Serializable{
 	}
 
 	public void setOwner(Player player) {
-		this.player = player;
+		this.owner = player;
 		this.getTile().getStyleClass().add(player.getCellStyle());
 		this.setEmpty(false);
 	}
 
 	public void reset() {
-		this.player = null;
+		this.owner = null;
 		this.setMovable(false);
 		this.getTile().getStyleClass().clear();
 		this.getTile().getStyleClass().add("hex");
@@ -98,12 +92,12 @@ public class Cell implements Serializable{
 	
 	public void selectCell() {
 		getTile().getStyleClass().clear();		
-		getTile().getStyleClass().add(player.getCellActiveStyle());		
+		getTile().getStyleClass().add(owner.getCellActiveStyle());		
 	}
 	
 	public void deselectCell() {
 		getTile().getStyleClass().clear();		
-		getTile().getStyleClass().add(player.getCellStyle());		
+		getTile().getStyleClass().add(owner.getCellStyle());		
 	}
 	
 	

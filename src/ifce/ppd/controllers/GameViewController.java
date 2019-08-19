@@ -7,9 +7,11 @@ import java.util.List;
 import ifce.ppd.bindings.ObservableStringBufferBiding;
 import ifce.ppd.models.Board;
 import ifce.ppd.models.Cell;
+import ifce.ppd.models.EndTurnCommand;
 import ifce.ppd.models.MessageCommand;
 import ifce.ppd.models.MoveCommand;
 import ifce.ppd.models.Player;
+import ifce.ppd.models.VictoryCommand;
 import ifce.ppd.threads.GameViewUpdaterThread;
 import ifce.ppd.utils.AreaUtils;
 import ifce.ppd.views.GameView;
@@ -29,9 +31,11 @@ public class GameViewController {
 	private ObservableStringBufferBiding buffer;
 	private CommunicationController communicationController;
 	private GameViewUpdaterThread gameViewUpdaterThread;
+	private int turn;
 
 	
 	public GameViewController(Player player, Player oponent) {
+		this.turn = 1;
 		view = new GameView();
 		board = new Board();
 		board.createBoard();
@@ -47,7 +51,7 @@ public class GameViewController {
 	}
 	
 	private void initUpdaterThread() {
-		this.gameViewUpdaterThread = new GameViewUpdaterThread(this.board, this.buffer, this.communicationController.getReceivedCommands(), this.communicationController.getUpdateViewLock());
+		this.gameViewUpdaterThread = new GameViewUpdaterThread(this.board, this.buffer, this.communicationController.getReceivedCommands(), this.communicationController.getUpdateViewLock(), this.view);
 		Thread updater = new Thread(this.gameViewUpdaterThread);
 		updater.start();
 		
@@ -85,6 +89,10 @@ public class GameViewController {
 		from.reset();
 		this.canMove = false;
 		this.sendMoveCommand(from, to);
+		
+		if (this.board.testVictoryOfPlayer(player)) {
+			this.communicationController.addCommand(new VictoryCommand(this.player));
+		}
 	}
 	
 	private void jumpToCell(Cell from, Cell to) {		
@@ -96,7 +104,11 @@ public class GameViewController {
 		this.canMove = true;
 		this.hasJumped = true;
 		this.sendMoveCommand(from, to);
-	}
+		
+		if (this.board.testVictoryOfPlayer(player)) {
+			this.communicationController.addCommand(new VictoryCommand(this.player));
+		}
+}
 	
 	private void highlightNeighborMoves(Cell cell) {
 		for (Cell possibleMove : this.possibleMoves) {
@@ -135,14 +147,19 @@ public class GameViewController {
 		}
 	}
 	
-	
-	
 	public Scene createScene() {
 		this.view.createChatArea();	
 		this.view.getChatTextArea().textProperty().bind(buffer);
+		this.buffer.addListener(listener -> {
+			this.view.getChatTextArea().selectPositionCaret(this.view.getChatTextArea().getLength());
+			this.view.getChatTextArea().deselect();
+			});
+		
 		this.view.getEndTurnButton().setOnMouseClicked(e -> endTurn());
 		this.view.getSendMessageButton().setOnMouseClicked(e -> sendMessage());
-		this.view.setBoardArea(createBoard(board));
+		this.view.addBoard(createBoard(board));
+		if (this.player.getPlayerId() == 2)
+			this.view.addClickPreventionPane();
 		this.initPlayerArea();
 		this.initOponentsArea(oponent);		
 		return this.view.createScene();
@@ -165,7 +182,10 @@ public class GameViewController {
 		this.clearHighlightedCells();
 		this.movingPiece = null;
 		this.canMove = true;
-		this.hasJumped = false;		
+		this.hasJumped = false;
+		this.view.addClickPreventionPane();
+		this.turn++;
+		this.communicationController.addCommand(new EndTurnCommand(this.turn));
 	}
 
 	private Pane createBoard(Board board) {

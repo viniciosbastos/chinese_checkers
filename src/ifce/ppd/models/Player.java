@@ -9,9 +9,7 @@ public class Player implements Serializable{
 	private static final long serialVersionUID = 1195521006996317269L;
 
 	private String color;
-	
 	private int playerArea;
-	
 	private int playerId;
 	
 	public Player(String color, int playerArea, int playerId) {
@@ -50,5 +48,11 @@ public class Player implements Serializable{
 
 	public String getCellActiveStyle() {
 		return "hex-active-" + this.color;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		Player otherPlayer = (Player) other;
+		return this.playerId == otherPlayer.getPlayerId();
 	}
 }

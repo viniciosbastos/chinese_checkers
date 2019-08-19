@@ -3,6 +3,7 @@ package ifce.ppd.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import ifce.ppd.utils.AreaUtils;
 import ifce.ppd.utils.TilesUtils;
 
 public class Board {
@@ -89,10 +90,6 @@ public class Board {
 		
 	}
 
-//	public List<Cell> getAdjacentTo(Cell cell) {
-//		return getAdjacentTo(cell, false);
-//	}
-//	
 	public List<Cell> getAdjacentTo(Cell cell) {
 		List<Cell> cells = new ArrayList<Cell>();
 		Cell neighborCell = null;
@@ -112,13 +109,18 @@ public class Board {
 				if (neighborCell != null) {
 					cells.add(neighborCell);
 				}
-//				else if (neighborCell!= null && !neighborCell.isEmpty()) {
-//					if (!fromJump)
-//						cells.addAll(getAdjacentTo(neighborCell, true));
-//				}
 			} catch (ArrayIndexOutOfBoundsException e) {}
 		}
 		return cells;
+	}
+
+	public boolean testVictoryOfPlayer(Player player) {
+		for (int[] position : AreaUtils.getOponentArea(player.getPlayerArea())) {
+			Cell cell = this.boardMatrix[position[0]][position[1]];
+			if (cell.isEmpty() || !cell.getOwner().equals(player))
+				return false;
+		}
+		return true;
 	}
 
 }

@@ -6,27 +6,28 @@ import ifce.ppd.bindings.ObservableStringBufferBiding;
 import ifce.ppd.models.Board;
 import ifce.ppd.models.Cell;
 import ifce.ppd.models.Command;
+import ifce.ppd.models.EndTurnCommand;
 import ifce.ppd.models.MessageCommand;
 import ifce.ppd.models.MoveCommand;
+import ifce.ppd.models.VictoryCommand;
+import ifce.ppd.views.GameView;
 
 public class GameViewUpdaterThread implements Runnable{
 	
+	private GameView view;
 	private Board board;
-	
-	private ObservableStringBufferBiding chatTextAreaBinBiding;
-	
+	private ObservableStringBufferBiding chatTextAreaBinBiding;		
 	private List<Command> receivedCommands;
-	
 	private Object lock;
-
 	private boolean isRunning;
 
-	public GameViewUpdaterThread(Board board, ObservableStringBufferBiding chatTextAreaBinBiding, List<Command> receivedCommands, Object lock) {
+	public GameViewUpdaterThread(Board board, ObservableStringBufferBiding chatTextAreaBinBiding, List<Command> receivedCommands, Object lock, GameView view) {
 		this.board = board;
 		this.chatTextAreaBinBiding = chatTextAreaBinBiding;
 		this.receivedCommands = receivedCommands;
 		this.lock = lock;
 		this.isRunning = true;
+		this.view = view;
 	}
 	
 	@Override
@@ -45,8 +46,23 @@ public class GameViewUpdaterThread implements Runnable{
 			moveOponentPiece((MoveCommand) command);
 		} else if (command instanceof MessageCommand) {
 			addMessageToChat((MessageCommand) command);
-		} 
+		} else if (command instanceof EndTurnCommand) {
+			changeTurn((EndTurnCommand) command);
+		} else if (command instanceof VictoryCommand) {
+			testVictoryOfOponent((VictoryCommand) command);
+		}
 		
+	}
+
+	private void testVictoryOfOponent(VictoryCommand command) {
+		if (this.board.testVictoryOfPlayer(command.getVictoriousPlayer())) {
+			this.chatTextAreaBinBiding.append("Você perdeu.");
+		}
+	}
+
+	private void changeTurn(EndTurnCommand command) {
+		this.chatTextAreaBinBiding.append(String.format("Sua vez (%d)", command.getCurrentTurn()));
+		this.view.removeClickPreventionPane();
 	}
 
 	private void addMessageToChat(MessageCommand messageCommand) {		

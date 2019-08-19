@@ -65,3 +65,7 @@
 	-fx-focus-color: transparent; 
 	-fx-faint-focus-color: transparent;
 }
+
+.transparent {
+	-fx-background-color: transparent;
+}

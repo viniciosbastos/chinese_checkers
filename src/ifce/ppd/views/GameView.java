@@ -1,5 +1,6 @@
 package ifce.ppd.views;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -7,28 +8,31 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class GameView {
 
 	private Scene scene;
-	
 	private TextArea chatTextArea;
-	
 	private TextArea messageTextArea;
-	
 	private VBox chatArea;
-	
-	private Pane boardArea;
-	
+	private StackPane boardArea;
 	private Button endTurnButton;
+	private Button sendMessageButton;
+	private Pane transparentPane;
 	
-	private Button sendMessageButton;	
+	public GameView() {
+		this.transparentPane = new Pane();
+		this.transparentPane.getStyleClass().add("transparent");		
+		
+		this.boardArea = new StackPane();
+	}
 		
 	public void createChatArea() {
 		chatArea = new VBox();		
 		this.chatTextArea = new TextArea();
-		chatTextArea.setMouseTransparent(true);
+//		chatTextArea.setMouseTransparent(true);
 		chatTextArea.setFocusTraversable(false);
 		chatTextArea.getStyleClass().addAll("chat-text-area", "no-focus-effect");
 		
@@ -81,7 +85,7 @@ public class GameView {
 		return chatArea;
 	}
 
-	public void setBoardArea(Pane boardArea) {
+	public void setBoardArea(StackPane boardArea) {
 		this.boardArea = boardArea;
 	}
 	
@@ -97,4 +101,17 @@ public class GameView {
 		return this.sendMessageButton;
 	}
 	
+	public void addBoard(Pane board) {
+		this.boardArea.getChildren().add(board);		
+	}
+	
+	public void addClickPreventionPane() {
+		this.boardArea.getChildren().add(this.transparentPane);		
+	}
+	
+	public void removeClickPreventionPane() {
+		Platform.runLater(() -> {
+			this.boardArea.getChildren().remove(this.transparentPane);
+		}); 
+	}
 }

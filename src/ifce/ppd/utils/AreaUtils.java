@@ -36,4 +36,13 @@ public class AreaUtils {
 			return AREA_4;
 		} 
 	}
+	
+	public static int[][] getOponentArea(int area) {
+		if (area == 1) {			
+			return AREA_4;
+		} else {
+			return AREA_1;
+		} 
+	}
+	
 }
