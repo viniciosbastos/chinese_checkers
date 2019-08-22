@@ -1,11 +1,8 @@
 package ifce.ppd.views;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 
 import javafx.application.Platform;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -28,10 +25,12 @@ public class GameView {
 	private TextArea chatTextArea;
 	private TextArea messageTextArea;
 	private VBox chatArea;
-	private StackPane boardArea;
+	private StackPane boardPane;
+	private VBox boardArea;
 	private Button endTurnButton;
 	private Button giveUpButton;
 	private Button sendMessageButton;
+	private Button restartButton;
 	private Pane transparentPane;
 	private Pane waitingPane;
 	private StackPane mainGamePane;
@@ -39,6 +38,14 @@ public class GameView {
 	private BorderPane victoryPane;
 	private BorderPane defeatPane;
 	private BorderPane givenUpPane;
+	private BorderPane turnPane;
+	private Label turnLabel;
+	
+	private HBox buttonsHBox;
+	private String playerColor;
+	private String oponentColor;
+	
+	private Pane board;
 	
 	public GameView(Stage stage) {
 		this.stage = stage;
@@ -46,8 +53,10 @@ public class GameView {
 		this.transparentPane = new Pane();
 		this.transparentPane.getStyleClass().add("transparent");		
 		this.waitingPane = createWaitingPane();
-		this.boardArea = new StackPane();
-		
+		this.boardPane = new StackPane();
+		this.boardArea = new VBox();
+		this.buttonsHBox = new HBox();
+
 		initPanes();
 	}
 		
@@ -106,6 +115,10 @@ public class GameView {
 		
 		HBox messageHBox = new HBox();
 		
+		turnPane = new BorderPane();		
+		turnLabel = new Label();
+		turnPane.setCenter(turnLabel);
+
 		this.messageTextArea = new TextArea();
 		messageTextArea.getStyleClass().addAll("chat-text-input", "no-focus-effect");
 		messageTextArea.setPromptText("Type your message here...");
@@ -115,13 +128,15 @@ public class GameView {
 		
 		messageHBox.getChildren().addAll(messageTextArea, sendMessageButton);
 		
+		buttonsHBox.getStyleClass().add("button-box");
 		
-		HBox buttonsHBox = new HBox();
 		this.endTurnButton = new Button("Finalizar Turno");
+		this.endTurnButton.getStyleClass().add("custom-button");
 		this.giveUpButton = new Button("Desistir");
+		this.giveUpButton.getStyleClass().add("custom-button");
 		
 		buttonsHBox.getChildren().addAll(endTurnButton, giveUpButton);
-		chatArea.getChildren().addAll(chatTextArea, messageHBox, buttonsHBox);
+		chatArea.getChildren().addAll(turnPane, chatTextArea, messageHBox, buttonsHBox);
 	}
 	
 	public BorderPane createWaitingPane() {
@@ -137,9 +152,9 @@ public class GameView {
 	public void createGameScene() {
 		GridPane gridPane = new GridPane();
 		gridPane.getColumnConstraints().addAll(new ColumnConstraints(800), 
-												new ColumnConstraints(400));				
+												new ColumnConstraints(400));
+		gridPane.add(this.boardPane, 0, 0);
 		gridPane.add(this.chatArea, 1, 0);							
-		gridPane.add(this.boardArea, 0, 0);
 		
 		this.mainGamePane.getChildren().add(gridPane);
 		gameScene = new Scene(mainGamePane, 1200, 600);
@@ -164,11 +179,11 @@ public class GameView {
 	}
 
 	public void setBoardArea(StackPane boardArea) {
-		this.boardArea = boardArea;
+		this.boardPane = boardArea;
 	}
 	
-	public Pane getBoardArea() {
-		return boardArea;
+	public Pane getBoardPane() {
+		return boardPane;
 	}
 
 	public Button getEndTurnButton() {
@@ -184,17 +199,16 @@ public class GameView {
 	}
 	
 	public void addBoard(Pane board) {
-		this.boardArea.getChildren().add(board);		
+		this.board = board;
+		this.boardPane.getChildren().add(board);		
 	}
 	
 	public void addClickPreventionPane() {
-		this.boardArea.getChildren().add(this.transparentPane);		
+		this.boardPane.getChildren().add(this.transparentPane);		
 	}
 	
 	public void removeClickPreventionPane() {
-		Platform.runLater(() -> {
-			this.boardArea.getChildren().remove(this.transparentPane);
-		}); 
+		this.boardPane.getChildren().remove(this.transparentPane);
 	}
 	
 	public void showWaitingScene() {
@@ -208,15 +222,110 @@ public class GameView {
 	}
 	
 	public void showVictoryPane() {
-		this.boardArea.getChildren().add(this.victoryPane);
+		this.boardPane.getChildren().add(this.victoryPane);
 	}
 	
 	public void showDefeatPane() {
-		this.boardArea.getChildren().add(this.defeatPane);
+		Platform.runLater(() -> {
+			this.boardPane.getChildren().add(this.defeatPane);			
+		});
 	}
 	
 	public void showGivenUpPane() {
-		this.boardArea.getChildren().add(this.givenUpPane);
+		this.boardPane.getChildren().add(this.givenUpPane);
 	}
 		
+	public VBox getBoardArea() {
+		return this.boardArea;
+	}
+	
+	public void setPlayerColor(String playerColor) {
+		this.playerColor = playerColor;
+	}
+
+	public void setOponentColor(String oponentColor) {
+		this.oponentColor = oponentColor;
+	}
+
+	public void setGameScene(Scene gameScene) {
+		this.gameScene = gameScene;
+	}
+
+	public void setChatTextArea(TextArea chatTextArea) {
+		this.chatTextArea = chatTextArea;
+	}
+
+	public void setMessageTextArea(TextArea messageTextArea) {
+		this.messageTextArea = messageTextArea;
+	}
+
+	public void setChatArea(VBox chatArea) {
+		this.chatArea = chatArea;
+	}
+
+	public void setBoardPane(StackPane boardPane) {
+		this.boardPane = boardPane;
+	}
+
+	public void setBoardArea(VBox boardArea) {
+		this.boardArea = boardArea;
+	}
+
+	public void setEndTurnButton(Button endTurnButton) {
+		this.endTurnButton = endTurnButton;
+	}
+
+	public void setGiveUpButton(Button giveUpButton) {
+		this.giveUpButton = giveUpButton;
+	}
+
+	public void setMainGamePane(StackPane mainGamePane) {
+		this.mainGamePane = mainGamePane;
+	}
+
+	public void setDefeatPane(BorderPane defeatPane) {
+		this.defeatPane = defeatPane;
+	}
+
+	public void setGivenUpPane(BorderPane givenUpPane) {
+		this.givenUpPane = givenUpPane;
+	}
+
+	public void setButtonsHBox(HBox buttonsHBox) {
+		this.buttonsHBox = buttonsHBox;
+	}
+
+	public void showPlayerTurn() {
+		this.turnLabel.setText("Sua Vez");
+		this.turnPane.setStyle("-fx-background-color: " + playerColor + "");
+	}
+	
+	public void showOponentTurn() {
+		this.turnLabel.setText("Vez do Oponente");
+		this.turnPane.setStyle("-fx-background-color: " + oponentColor + "");
+	}
+	
+	public Button getRestartButton() {
+		return this.restartButton;
+	}
+	
+	public void setRestartButton(Button restartButton) {
+		this.restartButton = restartButton;
+	}
+	
+	public void showResetButton() {
+		this.buttonsHBox.getChildren().clear();
+		this.buttonsHBox.getChildren().add(this.restartButton);
+	}
+	
+	public void resetBoard() {
+		this.boardPane.getChildren().clear();
+		this.boardPane.getChildren().add(board);
+	}
+
+	public void showControlButtons() {
+		this.buttonsHBox.getChildren().clear();
+		buttonsHBox.getChildren().addAll(endTurnButton, giveUpButton);
+	}
+	
 }

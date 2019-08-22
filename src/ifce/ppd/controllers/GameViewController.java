@@ -17,6 +17,7 @@ import ifce.ppd.models.VictoryCommand;
 import ifce.ppd.threads.GameViewUpdaterThread;
 import ifce.ppd.utils.AreaUtils;
 import ifce.ppd.views.GameView;
+import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -29,16 +30,18 @@ public class GameViewController {
 	private List<Cell> possibleMoves;
 	private Cell movingPiece;
 	private boolean canMove;
+	private boolean hasMoved;
 	private boolean hasJumped;
 	private ObservableStringBufferBiding buffer;
 	private CommunicationController communicationController;
 	private GameViewUpdaterThread gameViewUpdaterThread;
-	private int turn;
+	
 
 	
 	public GameViewController(Stage stage, Player player, Player oponent, Address address) {
-		this.turn = 1;
 		view = new GameView(stage);
+		view.setPlayerColor(player.getColor());
+		view.setOponentColor(oponent.getColor());
 		stage.setOnCloseRequest(e -> closeGame());
 		stage.setTitle("Chinese Checkers - " + player.getPlayerId());
 		board = new Board();
@@ -49,14 +52,15 @@ public class GameViewController {
 		this.buffer = new ObservableStringBufferBiding();
 		this.canMove = true;
 		this.hasJumped = false;
+		this.hasMoved = false;
 		
 		this.communicationController = new CommunicationController(address.getIpAddress(), address.getPort());
-		initUpdaterThread();
 	}
 	
 	private void initUpdaterThread() {
 		this.gameViewUpdaterThread = new GameViewUpdaterThread(this.board, this.buffer, this.communicationController.getReceivedCommands(), this.communicationController.getUpdateViewLock(), this.view);
-		Thread updater = new Thread(this.gameViewUpdaterThread);
+		this.gameViewUpdaterThread.setResetFunction(() -> resetGame());
+		Thread updater = new Thread(this.gameViewUpdaterThread);		
 		updater.start();
 		
 	}
@@ -92,11 +96,13 @@ public class GameViewController {
 		to.getTile().setOnMouseClicked(e -> selectPieceToMove(to));
 		from.reset();
 		this.canMove = false;
+		this.hasMoved = true;
 		this.sendMoveCommand(from, to);
 		
 		if (this.board.testVictoryOfPlayer(player)) {
 			this.communicationController.addCommand(new VictoryCommand(this.player));
 			this.view.showVictoryPane();
+			this.view.showResetButton();
 		}
 	}
 	
@@ -108,11 +114,13 @@ public class GameViewController {
 		from.reset();
 		this.canMove = true;
 		this.hasJumped = true;
+		this.hasMoved = true;
 		this.sendMoveCommand(from, to);
 		
 		if (this.board.testVictoryOfPlayer(player)) {
 			this.communicationController.addCommand(new VictoryCommand(this.player));
 			this.view.showVictoryPane();
+			this.view.showResetButton();
 		}
 }
 	
@@ -153,9 +161,15 @@ public class GameViewController {
 		}
 	}
 	
-
+	private void initRestartButton( ) {
+		Button restartButton = new Button("Reiniciar Jogo");
+		restartButton.getStyleClass().addAll("custom-button", "full-button");
+		restartButton.setOnMouseClicked(e -> resetGame());
+		this.view.setRestartButton(restartButton);
+	}
 	
 	public void createGameScene() {
+		initRestartButton();
 		this.view.createChatArea();	
 		this.view.getChatTextArea().textProperty().bind(buffer);
 		this.buffer.addListener(listener -> {
@@ -172,6 +186,8 @@ public class GameViewController {
 		this.initPlayerArea();
 		this.initOponentsArea(oponent);
 		this.view.createGameScene();
+		initUpdaterThread();
+		TurnController.turn++;		
 	}
 	
 	private void sendMessage() {
@@ -179,28 +195,33 @@ public class GameViewController {
 		if (text != null && !text.isEmpty()) {
 			// Send message to opponent player
 			// after response does:
-			this.buffer.append("Você: " + text);
+			this.buffer.append("Vocï¿½: " + text);
 			this.view.getMessageTextArea().clear();
-			this.communicationController.addCommand(new MessageCommand(text));
+			this.communicationController.addCommand(new MessageCommand(text, this.player));
 		}
 	}
 
 	private void endTurn() {
 		// Send info ending turn to opponent player
 		// after response does:
-		this.clearHighlightedCells();
-		this.movingPiece = null;
-		this.canMove = true;
-		this.hasJumped = false;
-		this.view.addClickPreventionPane();
-		this.turn++;
-		this.communicationController.addCommand(new EndTurnCommand(this.turn));
+		if (hasMoved) {
+			this.clearHighlightedCells();
+			this.movingPiece = null;
+			this.canMove = true;
+			this.hasJumped = false;
+			this.hasMoved = false;
+			this.view.addClickPreventionPane();
+			this.view.showOponentTurn();
+			TurnController.turn++;
+			this.communicationController.addCommand(new EndTurnCommand(TurnController.turn));
+		}
 	}
 	
 	private void giveUp() {
 		this.clearHighlightedCells();
 		this.communicationController.addCommand(new GiveUpCommand());
 		this.view.showGivenUpPane();
+		this.view.showResetButton();
 	}
 
 	private Pane createBoard(Board board) {
@@ -214,7 +235,6 @@ public class GameViewController {
 				}
 			}
 		}
-		
 		return boardPane;
 	}
 	
@@ -263,10 +283,36 @@ public class GameViewController {
 		createGameScene();
 		if (this.player.getPlayerId() == 1) {
 			this.view.showWaitingScene();
+			this.view.showPlayerTurn();
 			new Thread(() -> createServer()).start();
 		}
 		else {
-			connect(); 
+			connect();
+			this.view.showOponentTurn();
 		}
 	}	
+	
+	private void resetGame() {
+		if (TurnController.turn != 0) {
+			resetBoard();
+			initPlayerArea();
+			initOponentsArea(oponent);
+			this.view.showControlButtons();
+			this.view.resetBoard();
+			if (player.getPlayerId() % 2 == 1)
+				this.view.addClickPreventionPane();
+			TurnController.turn = 1;
+		}
+	}
+	
+	private void resetBoard() {
+		for (int i = 0; i < Board.BOARD_HEIGHT; i++) {
+			for (int j = 0; j < Board.BOARD_WIDTH; j++) {
+				Cell cell = board.getBoardMatrix()[i][j];
+				if (cell != null) {
+					cell.reset();			
+				}
+			}
+		}
+	}
 }

@@ -31,10 +31,15 @@ public class AreaUtils {
 
 	public static int[][] getArea(int area) {
 		if (area == 1) {			
-			return AREA_1;
-		} else {
 			return AREA_4;
+		} else {
+			return AREA_1;
 		} 
+//		if (area == 1) {			
+//			return AREA_1;
+//		} else {
+//			return AREA_4;
+//		} 
 	}
 	
 	public static int[][] getOponentArea(int area) {

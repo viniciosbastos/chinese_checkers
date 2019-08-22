@@ -17,6 +17,7 @@ public class Player implements Serializable{
 		this.color = color;
 		this.playerArea = playerArea;
 		this.playerId = playerId;
+		this.name = name;
 	}
 
 	public String getColor() {

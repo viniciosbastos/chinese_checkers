@@ -1,8 +1,8 @@
 package ifce.ppd.views;
 
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
@@ -26,18 +26,17 @@ public class MenuView {
 	}
 	
 	public void createFirstScreen() {
-		VBox firstScreen = new VBox();		
-		
-//		firstScreen.setAlignment(Pos.CENTER);
-//		firstScreen.setStyle("-fx-background-color: white");
+		VBox firstScreen = new VBox();				
 		firstScreen.getStyleClass().add("box");
 		
+		Label label = new Label("Chinese Checkers");
+		label.getStyleClass().add("title-label");
 		createServerButton = new Button("Criar Servidor");
 		createServerButton.getStyleClass().add("custom-button");
 		connectToServerButton = new Button("Conectar");
 		connectToServerButton.getStyleClass().add("custom-button");
 		
-		firstScreen.getChildren().addAll(createServerButton, connectToServerButton);		
+		firstScreen.getChildren().addAll(label, createServerButton, connectToServerButton);		
 		this.root.getChildren().add(firstScreen);
 	}
 	
@@ -45,9 +44,13 @@ public class MenuView {
 		GridPane grid = new GridPane();
 		grid.getStyleClass().add("grid");
 		
-		grid.add(createNameTextField(), 0, 0, 2, 1);
-		grid.add(createIPTextField(), 0, 1);		
-		grid.add(createPortTextField(), 1, 1);		
+		Label label = new Label("Chinese Checkers");
+		label.getStyleClass().add("title-label");
+		
+		grid.add(label, 0, 0, 2, 1);
+		grid.add(createNameTextField(), 0, 1, 2, 1);
+		grid.add(createIPTextField(), 0, 2);		
+		grid.add(createPortTextField(), 1, 2);		
 		grid.add(createStartButton(), 0, 3, 2, 1);
 		
 		this.root.getChildren().add(grid);
@@ -71,7 +74,7 @@ public class MenuView {
 	
 	private TextArea createIPTextField() {
 		ipAddressTextArea = new TextArea();
-		ipAddressTextArea.setPromptText("Endereço IP");
+		ipAddressTextArea.setPromptText("Endereï¿½o IP");
 		ipAddressTextArea.getStyleClass().add("input-text-area");
 		return ipAddressTextArea;
 	}

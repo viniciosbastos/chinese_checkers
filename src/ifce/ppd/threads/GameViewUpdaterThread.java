@@ -3,6 +3,7 @@ package ifce.ppd.threads;
 import java.util.List;
 
 import ifce.ppd.bindings.ObservableStringBufferBiding;
+import ifce.ppd.controllers.TurnController;
 import ifce.ppd.models.Board;
 import ifce.ppd.models.Cell;
 import ifce.ppd.models.Command;
@@ -62,7 +63,10 @@ public class GameViewUpdaterThread implements Runnable{
 	}
 
 	private void showVictory() {
-		Platform.runLater(() -> this.view.showVictoryPane());
+		Platform.runLater(() -> {
+			this.view.showVictoryPane();
+			this.view.showResetButton();	
+		});
 	}
 
 	private void startGame() {		
@@ -71,18 +75,22 @@ public class GameViewUpdaterThread implements Runnable{
 
 	private void testVictoryOfOponent(VictoryCommand command) {
 		if (this.board.testVictoryOfPlayer(command.getVictoriousPlayer())) {
-			this.chatTextAreaBinBiding.append("Você perdeu.");
+			this.chatTextAreaBinBiding.append("Vocï¿½ perdeu.");
 			this.view.showDefeatPane();
+			Platform.runLater(() -> this.view.showResetButton());
 		}
 	}
 
 	private void changeTurn(EndTurnCommand command) {
-		this.chatTextAreaBinBiding.append(String.format("Sua vez (%d)", command.getCurrentTurn()));
-		this.view.removeClickPreventionPane();
+		Platform.runLater(() -> {
+			TurnController.turn++;
+			this.view.removeClickPreventionPane();
+			this.view.showPlayerTurn();			
+		});
 	}
 
 	private void addMessageToChat(MessageCommand messageCommand) {		
-		this.chatTextAreaBinBiding.append("Oponente: "  + messageCommand.getText());
+		this.chatTextAreaBinBiding.append(messageCommand.getSender().getName() + ": "  + messageCommand.getText());
 	}
 
 	private void moveOponentPiece(MoveCommand command) {
@@ -105,6 +113,10 @@ public class GameViewUpdaterThread implements Runnable{
 	
 	public void stop() {
 		this.isRunning = false;
+	}
+	
+	public void setResetFunction(Runnable resetRunnable) {
+		resetRunnable.run();
 	}
 
 }

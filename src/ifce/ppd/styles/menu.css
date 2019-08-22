@@ -27,3 +27,10 @@
 	-fx-padding: 10px;
 	-fx-spacing: 10px;
 }
+
+.title-label {
+	-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);
+	-fx-font-size: 36px;
+	-fx-text-fill: red;
+	-fx-alignment: center;
+}

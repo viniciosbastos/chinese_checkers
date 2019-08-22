@@ -14,7 +14,7 @@ public class TilesUtils {
 	
 	public static final double CENTER_X = 400;
 	
-	public static final double CENTER_Y = 300;
+	public static final double CENTER_Y = 270;
 	
 
 	public static Point calculateCoordinateOfHexByIndex(Point center,  int i) {

@@ -27,28 +27,8 @@
 	-fx-stroke: black;
 }
 
-.hex-green {
-	-fx-fill: green;
-	-fx-stroke: black;
-}
-
-.hex-pink {
-	-fx-fill: pink;
-	-fx-stroke: black;
-}
-
-.hex-brown {
-	-fx-fill: brown;
-	-fx-stroke: black;
-}
-
-.hex-indigo {
-	-fx-fill: indigo;
-	-fx-stroke: black;
-}
-
 .chat-text-area {
-	-fx-pref-height: 500px;
+	-fx-pref-height: 470px;
 }
 
 .chat-text-input {
@@ -77,4 +57,23 @@
 .label {
 	-fx-font-size: 24px;
 	-fx-text-fill: white;
+}
+
+.button-box {
+	-fx-spacing: 15px
+}
+
+.custom-button {
+	-fx-background-color: white;
+	-fx-pref-width: 190px;
+	-fx-pref-height: 25px;
+	-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+}
+
+.custom-button:hover {
+	-fx-background-color: red;
+}
+
+.full-button {
+	-fx-pref-width: 400px;
 }
