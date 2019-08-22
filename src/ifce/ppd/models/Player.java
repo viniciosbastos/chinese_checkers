@@ -9,10 +9,11 @@ public class Player implements Serializable{
 	private static final long serialVersionUID = 1195521006996317269L;
 
 	private String color;
+	private String name;
 	private int playerArea;
 	private int playerId;
 	
-	public Player(String color, int playerArea, int playerId) {
+	public Player(String color, int playerArea, int playerId, String name) {
 		this.color = color;
 		this.playerArea = playerArea;
 		this.playerId = playerId;
@@ -55,4 +56,14 @@ public class Player implements Serializable{
 		Player otherPlayer = (Player) other;
 		return this.playerId == otherPlayer.getPlayerId();
 	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	
 }

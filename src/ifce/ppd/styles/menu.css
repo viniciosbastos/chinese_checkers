@@ -1,0 +1,29 @@
+.input-text-area {
+	-fx-pref-height: 20px;
+}
+
+.grid {
+	-fx-background-color: white; 
+	-fx-alignment: center;
+	-fx-padding: 10px;
+	-fx-hgap: 10px;
+	-fx-vgap: 10px;
+}
+
+.custom-button {
+	-fx-background-color: white;
+	-fx-pref-width: infinity;
+	-fx-pref-height: 40px;
+	-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+}
+
+.custom-button:hover {
+	-fx-background-color: red;
+}
+
+.box {
+	-fx-background-color: white;
+	-fx-alignment: center;
+	-fx-padding: 10px;
+	-fx-spacing: 10px;
+}

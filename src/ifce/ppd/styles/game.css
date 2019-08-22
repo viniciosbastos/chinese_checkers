@@ -69,3 +69,12 @@
 .transparent {
 	-fx-background-color: transparent;
 }
+
+.waiting-panel {
+	-fx-background-color: rgba(0, 0, 0, 0.8);
+}
+
+.label {
+	-fx-font-size: 24px;
+	-fx-text-fill: white;
+}

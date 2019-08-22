@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ifce.ppd.bindings.ObservableStringBufferBiding;
+import ifce.ppd.models.Address;
 import ifce.ppd.models.Board;
 import ifce.ppd.models.Cell;
 import ifce.ppd.models.EndTurnCommand;
+import ifce.ppd.models.GiveUpCommand;
 import ifce.ppd.models.MessageCommand;
 import ifce.ppd.models.MoveCommand;
 import ifce.ppd.models.Player;
@@ -15,8 +17,8 @@ import ifce.ppd.models.VictoryCommand;
 import ifce.ppd.threads.GameViewUpdaterThread;
 import ifce.ppd.utils.AreaUtils;
 import ifce.ppd.views.GameView;
-import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 
 public class GameViewController {
 	
@@ -34,9 +36,11 @@ public class GameViewController {
 	private int turn;
 
 	
-	public GameViewController(Player player, Player oponent) {
+	public GameViewController(Stage stage, Player player, Player oponent, Address address) {
 		this.turn = 1;
-		view = new GameView();
+		view = new GameView(stage);
+		stage.setOnCloseRequest(e -> closeGame());
+		stage.setTitle("Chinese Checkers - " + player.getPlayerId());
 		board = new Board();
 		board.createBoard();
 		this.oponent = oponent;
@@ -46,7 +50,7 @@ public class GameViewController {
 		this.canMove = true;
 		this.hasJumped = false;
 		
-		this.communicationController = new CommunicationController("127.0.0.1", 3000);
+		this.communicationController = new CommunicationController(address.getIpAddress(), address.getPort());
 		initUpdaterThread();
 	}
 	
@@ -92,6 +96,7 @@ public class GameViewController {
 		
 		if (this.board.testVictoryOfPlayer(player)) {
 			this.communicationController.addCommand(new VictoryCommand(this.player));
+			this.view.showVictoryPane();
 		}
 	}
 	
@@ -107,6 +112,7 @@ public class GameViewController {
 		
 		if (this.board.testVictoryOfPlayer(player)) {
 			this.communicationController.addCommand(new VictoryCommand(this.player));
+			this.view.showVictoryPane();
 		}
 }
 	
@@ -147,22 +153,25 @@ public class GameViewController {
 		}
 	}
 	
-	public Scene createScene() {
+
+	
+	public void createGameScene() {
 		this.view.createChatArea();	
 		this.view.getChatTextArea().textProperty().bind(buffer);
 		this.buffer.addListener(listener -> {
 			this.view.getChatTextArea().selectPositionCaret(this.view.getChatTextArea().getLength());
 			this.view.getChatTextArea().deselect();
-			});
+		});
 		
 		this.view.getEndTurnButton().setOnMouseClicked(e -> endTurn());
+		this.view.getGiveUpButton().setOnMouseClicked(e -> giveUp());
 		this.view.getSendMessageButton().setOnMouseClicked(e -> sendMessage());
 		this.view.addBoard(createBoard(board));
 		if (this.player.getPlayerId() == 2)
 			this.view.addClickPreventionPane();
 		this.initPlayerArea();
-		this.initOponentsArea(oponent);		
-		return this.view.createScene();
+		this.initOponentsArea(oponent);
+		this.view.createGameScene();
 	}
 	
 	private void sendMessage() {
@@ -186,6 +195,12 @@ public class GameViewController {
 		this.view.addClickPreventionPane();
 		this.turn++;
 		this.communicationController.addCommand(new EndTurnCommand(this.turn));
+	}
+	
+	private void giveUp() {
+		this.clearHighlightedCells();
+		this.communicationController.addCommand(new GiveUpCommand());
+		this.view.showGivenUpPane();
 	}
 
 	private Pane createBoard(Board board) {
@@ -243,4 +258,15 @@ public class GameViewController {
 			this.gameViewUpdaterThread.stop();	
 		this.communicationController.stopCommunication();
 	}
+
+	public void startGame() {
+		createGameScene();
+		if (this.player.getPlayerId() == 1) {
+			this.view.showWaitingScene();
+			new Thread(() -> createServer()).start();
+		}
+		else {
+			connect(); 
+		}
+	}	
 }

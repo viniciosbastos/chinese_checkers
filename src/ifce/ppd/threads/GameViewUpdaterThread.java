@@ -7,10 +7,13 @@ import ifce.ppd.models.Board;
 import ifce.ppd.models.Cell;
 import ifce.ppd.models.Command;
 import ifce.ppd.models.EndTurnCommand;
+import ifce.ppd.models.GiveUpCommand;
 import ifce.ppd.models.MessageCommand;
 import ifce.ppd.models.MoveCommand;
+import ifce.ppd.models.StartGameCommand;
 import ifce.ppd.models.VictoryCommand;
 import ifce.ppd.views.GameView;
+import javafx.application.Platform;
 
 public class GameViewUpdaterThread implements Runnable{
 	
@@ -42,7 +45,9 @@ public class GameViewUpdaterThread implements Runnable{
 	}
 
 	private void handleCommand(Command command) {
-		if (command instanceof MoveCommand) {
+		if (command instanceof StartGameCommand) {
+			startGame();
+		} else if (command instanceof MoveCommand) {
 			moveOponentPiece((MoveCommand) command);
 		} else if (command instanceof MessageCommand) {
 			addMessageToChat((MessageCommand) command);
@@ -50,13 +55,24 @@ public class GameViewUpdaterThread implements Runnable{
 			changeTurn((EndTurnCommand) command);
 		} else if (command instanceof VictoryCommand) {
 			testVictoryOfOponent((VictoryCommand) command);
+		} else if (command instanceof GiveUpCommand) {
+			showVictory();
 		}
 		
+	}
+
+	private void showVictory() {
+		Platform.runLater(() -> this.view.showVictoryPane());
+	}
+
+	private void startGame() {		
+		this.view.removeWaitingPane();
 	}
 
 	private void testVictoryOfOponent(VictoryCommand command) {
 		if (this.board.testVictoryOfPlayer(command.getVictoriousPlayer())) {
 			this.chatTextAreaBinBiding.append("Você perdeu.");
+			this.view.showDefeatPane();
 		}
 	}
 

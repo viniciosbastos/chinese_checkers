@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ifce.ppd.models.Command;
+import ifce.ppd.models.StartGameCommand;
 import ifce.ppd.threads.ReceiverThread;
 import ifce.ppd.threads.SenderThread;
 
@@ -62,6 +63,8 @@ public class CommunicationController {
 		this.receiverThread.setSocket(socket);
 		Thread receiver = new Thread(this.receiverThread);
 		receiver.start();
+		
+		this.addCommand(new StartGameCommand());
 	}
 	
 	public void addCommand(Command c) {
