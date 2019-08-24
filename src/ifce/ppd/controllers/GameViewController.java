@@ -13,6 +13,7 @@ import ifce.ppd.models.GiveUpCommand;
 import ifce.ppd.models.MessageCommand;
 import ifce.ppd.models.MoveCommand;
 import ifce.ppd.models.Player;
+import ifce.ppd.models.RestartCommand;
 import ifce.ppd.models.VictoryCommand;
 import ifce.ppd.threads.GameViewUpdaterThread;
 import ifce.ppd.utils.AreaUtils;
@@ -59,7 +60,7 @@ public class GameViewController {
 	
 	private void initUpdaterThread() {
 		this.gameViewUpdaterThread = new GameViewUpdaterThread(this.board, this.buffer, this.communicationController.getReceivedCommands(), this.communicationController.getUpdateViewLock(), this.view);
-		this.gameViewUpdaterThread.setResetFunction(() -> resetGame());
+		this.gameViewUpdaterThread.setResetFunction(() -> resetState());
 		Thread updater = new Thread(this.gameViewUpdaterThread);		
 		updater.start();
 		
@@ -164,7 +165,7 @@ public class GameViewController {
 	private void initRestartButton( ) {
 		Button restartButton = new Button("Reiniciar Jogo");
 		restartButton.getStyleClass().addAll("custom-button", "full-button");
-		restartButton.setOnMouseClicked(e -> resetGame());
+		restartButton.setOnMouseClicked(e -> restartGame());
 		this.view.setRestartButton(restartButton);
 	}
 	
@@ -292,17 +293,26 @@ public class GameViewController {
 		}
 	}	
 	
-	private void resetGame() {
-		if (TurnController.turn != 0) {
-			resetBoard();
-			initPlayerArea();
-			initOponentsArea(oponent);
-			this.view.showControlButtons();
-			this.view.resetBoard();
-			if (player.getPlayerId() % 2 == 1)
-				this.view.addClickPreventionPane();
-			TurnController.turn = 1;
+	private void restartGame() {
+		this.communicationController.addCommand(new RestartCommand());
+		resetState();
+	}
+	
+	private void resetState() {
+		resetBoard();
+		resetStatesFlag();
+		initPlayerArea();
+		initOponentsArea(oponent);
+		
+		this.view.showControlButtons();
+		this.view.resetBoard();
+		if (player.getPlayerId() == 2) {
+			this.view.addClickPreventionPane();
+			this.view.showOponentTurn();
+		} else {
+			this.view.showPlayerTurn();			
 		}
+		TurnController.turn = 1;
 	}
 	
 	private void resetBoard() {
@@ -314,5 +324,11 @@ public class GameViewController {
 				}
 			}
 		}
+	}
+	
+	private void resetStatesFlag() {
+		this.canMove = true;
+		this.hasJumped = false;
+		this.hasMoved = false;
 	}
 }

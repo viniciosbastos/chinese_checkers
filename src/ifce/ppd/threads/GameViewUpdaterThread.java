@@ -11,6 +11,7 @@ import ifce.ppd.models.EndTurnCommand;
 import ifce.ppd.models.GiveUpCommand;
 import ifce.ppd.models.MessageCommand;
 import ifce.ppd.models.MoveCommand;
+import ifce.ppd.models.RestartCommand;
 import ifce.ppd.models.StartGameCommand;
 import ifce.ppd.models.VictoryCommand;
 import ifce.ppd.views.GameView;
@@ -24,6 +25,7 @@ public class GameViewUpdaterThread implements Runnable{
 	private List<Command> receivedCommands;
 	private Object lock;
 	private boolean isRunning;
+	private Runnable resetRunnable;
 
 	public GameViewUpdaterThread(Board board, ObservableStringBufferBiding chatTextAreaBinBiding, List<Command> receivedCommands, Object lock, GameView view) {
 		this.board = board;
@@ -58,8 +60,14 @@ public class GameViewUpdaterThread implements Runnable{
 			testVictoryOfOponent((VictoryCommand) command);
 		} else if (command instanceof GiveUpCommand) {
 			showVictory();
+		} else if(command instanceof RestartCommand) {
+			restartGame();
 		}
 		
+	}
+
+	private void restartGame() {
+		Platform.runLater(() -> this.resetRunnable.run());
 	}
 
 	private void showVictory() {
@@ -116,7 +124,7 @@ public class GameViewUpdaterThread implements Runnable{
 	}
 	
 	public void setResetFunction(Runnable resetRunnable) {
-		resetRunnable.run();
+		this.resetRunnable = resetRunnable;
 	}
 
 }
