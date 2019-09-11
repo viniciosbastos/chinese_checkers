@@ -14,8 +14,6 @@ public class MenuView {
 	private StackPane root;
 	
 	private TextArea nameTextArea;
-	private TextArea ipAddressTextArea;
-	private TextArea portTextArea;
 	
 	private Button createServerButton;
 	private Button connectToServerButton;
@@ -49,9 +47,7 @@ public class MenuView {
 		
 		grid.add(label, 0, 0, 2, 1);
 		grid.add(createNameTextField(), 0, 1, 2, 1);
-		grid.add(createIPTextField(), 0, 2);		
-		grid.add(createPortTextField(), 1, 2);		
-		grid.add(createStartButton(), 0, 3, 2, 1);
+		grid.add(createStartButton(), 0, 2, 2, 1);
 		
 		this.root.getChildren().add(grid);
 	}
@@ -72,20 +68,6 @@ public class MenuView {
 		return nameTextArea;
 	}
 	
-	private TextArea createIPTextField() {
-		ipAddressTextArea = new TextArea();
-		ipAddressTextArea.setPromptText("Endere�o IP");
-		ipAddressTextArea.getStyleClass().add("input-text-area");
-		return ipAddressTextArea;
-	}
-	
-	private TextArea createPortTextField() {
-		portTextArea = new TextArea();
-		portTextArea.setPromptText("Porta");
-		portTextArea.getStyleClass().add("input-text-area");
-		return portTextArea;
-	}
-	
 	private Button createStartButton() {
 		startGameButton = new Button("Iniciar Jogo");
 		startGameButton.getStyleClass().add("custom-button");
@@ -94,14 +76,6 @@ public class MenuView {
 
 	public TextArea getNameTextArea() {
 		return nameTextArea;
-	}
-
-	public TextArea getIpAddressTextArea() {
-		return ipAddressTextArea;
-	}
-
-	public TextArea getPortTextArea() {
-		return portTextArea;
 	}
 
 	public Button getCreateServerButton() {

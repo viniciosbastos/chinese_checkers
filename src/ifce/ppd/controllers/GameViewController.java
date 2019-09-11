@@ -1,21 +1,18 @@
 package ifce.ppd.controllers;
 
-import java.io.IOException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
 import ifce.ppd.bindings.ObservableStringBufferBiding;
-import ifce.ppd.models.Address;
 import ifce.ppd.models.Board;
 import ifce.ppd.models.Cell;
-import ifce.ppd.models.EndTurnCommand;
-import ifce.ppd.models.GiveUpCommand;
-import ifce.ppd.models.MessageCommand;
-import ifce.ppd.models.MoveCommand;
 import ifce.ppd.models.Player;
-import ifce.ppd.models.RestartCommand;
-import ifce.ppd.models.VictoryCommand;
-import ifce.ppd.threads.GameViewUpdaterThread;
+import ifce.ppd.threads.CommunicationImpl;
 import ifce.ppd.utils.AreaUtils;
 import ifce.ppd.views.GameView;
 import javafx.scene.control.Button;
@@ -33,13 +30,12 @@ public class GameViewController {
 	private boolean canMove;
 	private boolean hasMoved;
 	private boolean hasJumped;
-	private ObservableStringBufferBiding buffer;
-	private CommunicationController communicationController;
-	private GameViewUpdaterThread gameViewUpdaterThread;
+	private ObservableStringBufferBiding buffer;	
+	private CommunicationImpl serverCommunicationImpl;	
+	private ICommunication oponentCommunication;
+	private Registry registry;
 	
-
-	
-	public GameViewController(Stage stage, Player player, Player oponent, Address address) {
+	public GameViewController(Stage stage, Player player, Player oponent) {
 		view = new GameView(stage);
 		view.setPlayerColor(player.getColor());
 		view.setOponentColor(oponent.getColor());
@@ -55,15 +51,44 @@ public class GameViewController {
 		this.hasJumped = false;
 		this.hasMoved = false;
 		
-		this.communicationController = new CommunicationController(address.getIpAddress(), address.getPort());
+		// Inicializa a 'lado servidor' do jogador.
+		initServerCommunication();
+		if (this.player.getPlayerId() == 2) {
+			initClientCommunication();
+		}
 	}
 	
-	private void initUpdaterThread() {
-		this.gameViewUpdaterThread = new GameViewUpdaterThread(this.board, this.buffer, this.communicationController.getReceivedCommands(), this.communicationController.getUpdateViewLock(), this.view);
-		this.gameViewUpdaterThread.setResetFunction(() -> resetState());
-		Thread updater = new Thread(this.gameViewUpdaterThread);		
-		updater.start();
-		
+	private void closeGame() {
+		try {
+			this.registry.unbind("Communication" + player.getPlayerId());			
+		} catch (RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		} finally {
+			System.exit(0);
+		}
+	}
+
+	private void initClientCommunication() {
+		try {
+			this.oponentCommunication = (ICommunication) LocateRegistry.getRegistry(3000).lookup("Communication" + oponent.getPlayerId());
+		} catch (RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void initServerCommunication() {
+		try {
+			this.serverCommunicationImpl = new CommunicationImpl(this.board, this.buffer, this.view, () -> {initClientCommunication();});
+			this.serverCommunicationImpl.setResetFunction(() -> resetState());
+			ICommunication stub = (ICommunication) UnicastRemoteObject.exportObject(serverCommunicationImpl, 0);			
+			if (this.player.getPlayerId() == 1)
+				registry = LocateRegistry.createRegistry(3000);
+			else 
+				registry = LocateRegistry.getRegistry(3000);
+			registry.rebind("Communication" + player.getPlayerId(), stub);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void selectPieceToMove(Cell cell) {
@@ -101,7 +126,11 @@ public class GameViewController {
 		this.sendMoveCommand(from, to);
 		
 		if (this.board.testVictoryOfPlayer(player)) {
-			this.communicationController.addCommand(new VictoryCommand(this.player));
+			try {
+				this.oponentCommunication.victory(player);
+			} catch (RemoteException e1) {
+				e1.printStackTrace();
+			}
 			this.view.showVictoryPane();
 			this.view.showResetButton();
 		}
@@ -119,7 +148,11 @@ public class GameViewController {
 		this.sendMoveCommand(from, to);
 		
 		if (this.board.testVictoryOfPlayer(player)) {
-			this.communicationController.addCommand(new VictoryCommand(this.player));
+			try {
+				this.oponentCommunication.victory(player);
+			} catch (RemoteException e1) {
+				e1.printStackTrace();
+			}
 			this.view.showVictoryPane();
 			this.view.showResetButton();
 		}
@@ -187,24 +220,23 @@ public class GameViewController {
 		this.initPlayerArea();
 		this.initOponentsArea(oponent);
 		this.view.createGameScene();
-		initUpdaterThread();
 		TurnController.turn++;		
 	}
 	
 	private void sendMessage() {
 		String text = this.view.getMessageTextArea().getText();
 		if (text != null && !text.isEmpty()) {
-			// Send message to opponent player
-			// after response does:
 			this.buffer.append("Voc�: " + text);
 			this.view.getMessageTextArea().clear();
-			this.communicationController.addCommand(new MessageCommand(text, this.player));
+			try {
+				this.oponentCommunication.sendMessage(player, text);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
 	private void endTurn() {
-		// Send info ending turn to opponent player
-		// after response does:
 		if (hasMoved) {
 			this.clearHighlightedCells();
 			this.movingPiece = null;
@@ -214,13 +246,21 @@ public class GameViewController {
 			this.view.addClickPreventionPane();
 			this.view.showOponentTurn();
 			TurnController.turn++;
-			this.communicationController.addCommand(new EndTurnCommand(TurnController.turn));
+			try {
+				this.oponentCommunication.endTurn(TurnController.turn);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
 	private void giveUp() {
 		this.clearHighlightedCells();
-		this.communicationController.addCommand(new GiveUpCommand());
+		try {
+			this.oponentCommunication.giveup();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 		this.view.showGivenUpPane();
 		this.view.showResetButton();
 	}
@@ -255,46 +295,35 @@ public class GameViewController {
 	}
 	
 	private void sendMoveCommand(Cell from, Cell to) {
-		this.communicationController.addCommand(new MoveCommand(from, to, this.player));		
-	}
-	
-	public void createServer() {
 		try {
-			this.communicationController.createServer();			
-		} catch (IOException e) {
+			this.oponentCommunication.move(from.getMatrixIndexRow(), from.getMatrixIndexColumn(), to.getMatrixIndexRow(), to.getMatrixIndexColumn(), player);
+		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void connect() {
-		try {
-			this.communicationController.connect();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void closeGame() {
-		if (this.gameViewUpdaterThread != null)
-			this.gameViewUpdaterThread.stop();	
-		this.communicationController.stopCommunication();
-	}
-
 	public void startGame() {
 		createGameScene();
 		if (this.player.getPlayerId() == 1) {
 			this.view.showWaitingScene();
 			this.view.showPlayerTurn();
-			new Thread(() -> createServer()).start();
 		}
 		else {
-			connect();
+			try {
+				this.oponentCommunication.startGame();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 			this.view.showOponentTurn();
 		}
 	}	
 	
 	private void restartGame() {
-		this.communicationController.addCommand(new RestartCommand());
+		try {
+			this.oponentCommunication.restartGame();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 		resetState();
 	}
 	

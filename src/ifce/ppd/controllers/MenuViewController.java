@@ -1,6 +1,5 @@
 package ifce.ppd.controllers;
 
-import ifce.ppd.models.Address;
 import ifce.ppd.models.Player;
 import ifce.ppd.views.MenuView;
 import javafx.stage.Stage;
@@ -28,8 +27,6 @@ public class MenuViewController {
 	
 	private void openCreateServerPane() {
 		this.view.createLoginScene();
-		this.view.getIpAddressTextArea().setText("127.0.0.1");
-		this.view.getIpAddressTextArea().setEditable(false);
 		this.view.getStartGameButton().setOnMouseClicked(e -> startGame());
 	}
 	
@@ -51,9 +48,7 @@ public class MenuViewController {
 	}
 	
 	private void createGameController(Player player, Player oponent) {
-		String ipAddress = this.view.getIpAddressTextArea().getText();
-		int port = Integer.parseInt(this.view.getPortTextArea().getText());
-		GameViewController gameController = new GameViewController(this.stage, player, oponent, new Address(ipAddress, port));
+		GameViewController gameController = new GameViewController(this.stage, player, oponent);
 		gameController.startGame();
 	}
 }
